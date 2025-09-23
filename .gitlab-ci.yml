@@ -1,50 +1,10 @@
 stages:
   - build
 
+include:
+  - project: 'components/package'
+    file: '/templates/signing/signing.gitlab-ci.yml'
+
 build_and_sign:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind  # Enable Docker-in-Docker service to allow Docker commands inside the container
   variables:
-    IMAGE_TAG: $CI_COMMIT_SHORT_SHA  # Use the commit short SHA as the image tag
-    IMAGE_URI: $CI_REGISTRY_IMAGE:$IMAGE_TAG  # Construct the full image URI with the registry, project path, and tag
-    COSIGN_YES: "true"  # Automatically confirm actions in Cosign without user interaction
-    FF_SCRIPT_SECTIONS: "true"  # Enables GitLab's CI script sections for better multi-line script output
-  id_tokens:
-    SIGSTORE_ID_TOKEN:
-      aud: sigstore  # Provide an OIDC token for keyless signing with Cosign
-  before_script:
-    - apk add --no-cache cosign jq  # Install Cosign (mandatory) and jq (optional)
-    - docker login -u "gitlab-ci-token" -p "$CI_JOB_TOKEN" "$CI_REGISTRY"  # Log in to the Docker registry using GitLab CI token
-  script:
-    # Build the Docker image using the specified tag and push it to the registry
-    - docker build --pull -t "$IMAGE_URI" .
-    - docker push "$IMAGE_URI"
-
-    # Retrieve the digest of the pushed image to use in the signing step
-    - IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_URI")
-
-    # Sign the image using Cosign with annotations that provide metadata about the build and tag annotation to allow verifying
-    # the tag->digest mapping (https://github.com/sigstore/cosign?tab=readme-ov-file#tag-signing)
-    - |
-      cosign sign "$IMAGE_DIGEST" \
-        --annotations "com.gitlab.ci.user.name=$GITLAB_USER_NAME" \
-        --annotations "com.gitlab.ci.pipeline.id=$CI_PIPELINE_ID" \
-        --annotations "com.gitlab.ci.pipeline.url=$CI_PIPELINE_URL" \
-        --annotations "com.gitlab.ci.job.id=$CI_JOB_ID" \
-        --annotations "com.gitlab.ci.job.url=$CI_JOB_URL" \
-        --annotations "com.gitlab.ci.commit.sha=$CI_COMMIT_SHA" \
-        --annotations "com.gitlab.ci.commit.ref.name=$CI_COMMIT_REF_NAME" \
-        --annotations "com.gitlab.ci.project.path=$CI_PROJECT_PATH" \
-        --annotations "org.opencontainers.image.source=$CI_PROJECT_URL" \
-        --annotations "org.opencontainers.image.revision=$CI_COMMIT_SHA" \
-        --annotations "tag=$IMAGE_TAG"
-
-    # Verify the image signature using Cosign to ensure it matches the expected annotations and certificate identity
-    - |
-      cosign verify \
-        --annotations "tag=$IMAGE_TAG" \
-        --certificate-identity "$CI_PROJECT_URL//.gitlab-ci.yml@refs/heads/$CI_COMMIT_REF_NAME" \
-        --certificate-oidc-issuer "$CI_SERVER_URL" \
-        "$IMAGE_URI" | jq .  # Use jq to format the verification output for easier readability
+    IMAGE_TAG: $CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA

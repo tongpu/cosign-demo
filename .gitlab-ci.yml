@@ -2,8 +2,7 @@ stages:
   - build
 
 include:
-  - project: 'tongpu/package'
-    ref: fix/signing_verification
+  - project: 'components/package'
     file: '/templates/signing/signing.gitlab-ci.yml'
 
 build_and_sign:

@@ -4,7 +4,40 @@ This repository builds a simple Python Flask based demo application and signs th
 
 The instructions in this repository are based on a blog post from GitLab: <https://about.gitlab.com/blog/annotate-container-images-with-build-provenance-using-cosign-in-gitlab-ci-cd/>
 
-## Validate images with the Sigstore policy-controller
+## Validate Images in Kubernetes
+
+### Using Kyverno
+
+1. Install Kyverno: https://kyverno.io/docs/installation/installation/
+2. Configure a Kyverno `ClusterPolicy` to only accept signed images from the `main` branch
+   ```yaml
+   apiVersion: kyverno.io/v1
+   kind: ClusterPolicy
+   metadata:
+     name: gitlab-images-are-signed
+   spec:
+     validationFailureAction: Enforce
+     webhookTimeoutSeconds: 30
+     rules:
+       - name: check-keyless-cosign-signature
+         match:
+           any:
+             - resources:
+                 kinds:
+                   - Pod
+         verifyImages:
+           - imageReferences:
+               - registry.gitlab.com/tongpu/cosign-demo:*
+             attestors:
+               - entries:
+                   - keyless:
+                       subject: https://gitlab.com/tongpu/cosign-demo//.gitlab-ci.yml@refs/heads/main
+                       issuer: https://gitlab.com
+                       rekor:
+                         url: https://rekor.sigstore.dev
+   ```
+
+### Using Sigstore policy-controller
 
 1. Install the Sigstore policy-controller by installing the Helm chart: https://github.com/sigstore/helm-charts/tree/main/charts/policy-controller
 2. Add the label `policy.sigstore.dev/include=true` to the namespace you want to protect

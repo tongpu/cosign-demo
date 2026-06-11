@@ -1,10 +1,57 @@
+---
 stages:
   - build
+  - attest
 
-include:
-  - project: 'components/package'
-    file: '/templates/signing/signing.gitlab-ci.yml'
-
-build_and_sign:
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   variables:
-    IMAGE_TAG: $CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    IMAGE_TAG: "$CI_COMMIT_REF_SLUG"
+    IMAGE_URI: "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    RUNNER_GENERATE_ARTIFACTS_METADATA: true
+  before_script:
+    - docker login -u "gitlab-ci-token" -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+    - docker buildx create --bootstrap --use --name builder --driver docker-container
+  script:
+    - docker buildx build
+      --attest "type=provenance,=mode=max,version=v1,builder-id=$CI_JOB_URL"
+      --metadata-file=buildx-metadata.json
+      --push --tag "$IMAGE_URI" .
+  artifacts:
+    paths:
+      - buildx-metadata.json
+    expire_in: 1d
+
+provenance:
+  stage: attest
+  image: docker:latest
+  variables:
+    COSIGN_YES: 'true'
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  before_script:
+    - apk add --no-cache cosign jq
+    - docker login -u "gitlab-ci-token" -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  script:
+    - IMAGE_DIGEST=$(jq --raw-output '."containerimage.digest"' buildx-metadata.json)
+    - IMAGE_URI="${CI_REGISTRY_IMAGE}@${IMAGE_DIGEST}"
+    - jq '.predicate' artifacts-metadata.json > gitlabci-predicate.json
+    - echo "Attesting provenance for ${IMAGE_URI}..."
+    - cosign attest
+      --predicate=gitlabci-predicate.json
+      --type slsaprovenance1
+      --yes
+      "${IMAGE_URI}"
+    - echo "Performing self-verification to ensure provenance is valid..."
+    - cosign verify-attestation
+      --type slsaprovenance1
+      --certificate-identity-regexp ".*"
+      --certificate-oidc-issuer "${CI_SERVER_URL}"
+      "${IMAGE_URI}"
+    - echo "Self-verification successful! Provenance is valid."
+  dependencies:
+    - build

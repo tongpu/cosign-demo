@@ -14,14 +14,14 @@ sha256 = "ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"
 
 [[packages]]
 name = "click"
-version = "8.4.1"
+version = "8.5.0"
 
 [[packages.wheels]]
-name = "click-8.4.1-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/c7/0d/67e5b4109ea4a837e80daa87c2c696711955e40449a97e8926672534def2/click-8.4.1-py3-none-any.whl"
+name = "click-8.5.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "482be17c6991b8c19c5429a1e995d9b0efdbb63172824c41f99965dc0ade8ec2"
+sha256 = "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
 
 [[packages]]
 name = "flask"
@@ -36,14 +36,14 @@ sha256 = "f4bcbefc124291925f1a26446da31a5178f9483862233b23c0c96a20701f670c"
 
 [[packages]]
 name = "gunicorn"
-version = "26.0.0"
+version = "26.2.0"
 
 [[packages.wheels]]
-name = "gunicorn-26.0.0-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/e6/40/9c2384fc2be4ad25dd4a49decd5ad9ea5a3639814c11bd40ab77cb9f0a14/gunicorn-26.0.0-py3-none-any.whl"
+name = "gunicorn-26.2.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/fe/85/7522a52e5e2f42faf1a129113ab63e548c42e103e9af395b7bfe65e403e2/gunicorn-26.2.0-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "40233d26a5f0d1872916188c276e21641155111c2853f0c2cd55260aec0d24fc"
+sha256 = "bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3"
 
 [[packages]]
 name = "itsdangerous"
@@ -77,17 +77,6 @@ url = "https://files.pythonhosted.org/packages/41/3c/a36c2450754618e62008bf7435c
 
 [packages.wheels.hashes]
 sha256 = "457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97"
-
-[[packages]]
-name = "packaging"
-version = "26.2"
-
-[[packages.wheels]]
-name = "packaging-26.2-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl"
-
-[packages.wheels.hashes]
-sha256 = "5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e"
 
 [[packages]]
 name = "werkzeug"

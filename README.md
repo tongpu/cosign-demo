@@ -29,3 +29,12 @@ The instructions in this repository are based on a blog post from GitLab: <https
    ```
 4. Create a pod using an image built on `main` and it will be accepted
 5. Create a pod using an image built on another branch and it will be denied
+
+## Update pylock.toml
+
+Since `pylock.toml` can't be updated by Dependabot yet (see [issue](https://github.com/dependabot/dependabot-core/issues/12094)) here are the instructions to updating it manually.
+
+
+```shell
+pip lock -r requirements.txt
+```
